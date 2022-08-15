@@ -1,15 +1,49 @@
-
 #include <Windows.h>
 #include <stdio.h>
 
+#define SIMKEY(N) {\
+            keybd_event(N, 0, 0, 0);\
+            keybd_event(N, 0, KEYEVENTF_KEYUP, 0);\
+        }
+
 HHOOK hHook = NULL;
 
+// #define SENDINPUT(VKCODE) {\
+//     INPUT inputs[2] = { 0 };\
+//     inputs[0].type = INPUT_KEYBOARD;\
+//     inputs[0].ki.wVk = VKCODE;\
+//     inputs[1].type = INPUT_KEYBOARD;\
+//     inputs[1].ki.wVk = VKCODE;\
+//     inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;\
+//     UINT uSent = SendInput(2, inputs, sizeof(INPUT));\
+// }
+
+#define SENDINPUT(VKCODE) {\
+    INPUT input = { 0 };\
+    input.type = INPUT_KEYBOARD;\
+    input.ki.dwFlags = KEYEVENTF_SCANCODE;\
+    input.ki.wVk = VKCODE;\
+    input.ki.wScan = MapVirtualKey(VKCODE, 0);\
+    SendInput(1, &input, sizeof(INPUT));\
+    Sleep(10);\
+    input.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;\
+    SendInput(1, &input, sizeof(INPUT));\
+    Sleep(10);\
+}
+
 int Event(DWORD vkCode) {
-    if(vkCode == 0x51) {
-        keybd_event(0x53, 0, 0, 0);
-        keybd_event(0x53, 0, KEYEVENTF_KEYUP, 0);
-        keybd_event(0x44, 0, 0, 0);
-        keybd_event(0x44, 0, KEYEVENTF_KEYUP, 0);
+    if(vkCode == 0x41) {
+        SENDINPUT(0x44);
+        return 1;
+    }
+    if(vkCode == 0x44) {
+        SENDINPUT(0x41);
+        return 1;
+    }
+    if(vkCode == 0x43) {
+        SENDINPUT(0x53);
+        SENDINPUT(0x41);
+        SENDINPUT(0x4A);
         return 1;
     }
     return 0;
